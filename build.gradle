@@ -79,6 +79,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation files('libs/cc-tweaked-1.12.2-1.89.2.jar')
 }
 
 test {

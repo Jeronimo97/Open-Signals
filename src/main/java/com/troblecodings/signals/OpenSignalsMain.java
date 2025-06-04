@@ -19,6 +19,9 @@ import org.apache.logging.log4j.core.LoggerContext;
 import com.troblecodings.contentpacklib.ContentPackHandler;
 import com.troblecodings.core.net.NetworkHandler;
 import com.troblecodings.guilib.ecs.GuiHandler;
+import com.troblecodings.signals.blocks.ComputerInterfaceBlock;
+import com.troblecodings.signals.cctweaked.ComputerInterfacePeripheral;
+import com.troblecodings.signals.cctweaked.ComputerInterfacePeripheralProvider;
 import com.troblecodings.signals.handler.NameHandler;
 import com.troblecodings.signals.handler.SignalBoxHandler;
 import com.troblecodings.signals.handler.SignalStateHandler;
@@ -26,9 +29,12 @@ import com.troblecodings.signals.init.OSBlocks;
 import com.troblecodings.signals.init.OSItems;
 import com.troblecodings.signals.init.OSSounds;
 import com.troblecodings.signals.proxy.CommonProxy;
+import com.troblecodings.signals.tileentitys.ComputerinterfaceEntity;
 
+import dan200.computercraft.api.ComputerCraftAPI;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -37,12 +43,14 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 
-@Mod(modid = OpenSignalsMain.MODID, acceptedMinecraftVersions = "[1.12.2]")
+@Mod(modid = OpenSignalsMain.MODID, acceptedMinecraftVersions = "[1.12.2]", dependencies = "after:cctweaked")
 public class OpenSignalsMain {
 
     @Instance
     private static OpenSignalsMain instance;
     public static final String MODID = "opensignals";
+
+    private ComputerInterfacePeripheralProvider computerInterfacePeripheralProvider = new ComputerInterfacePeripheralProvider();
 
     public static OpenSignalsMain getInstance() {
         return instance;
@@ -94,6 +102,10 @@ public class OpenSignalsMain {
         debug = Files.isDirectory(event.getSourceFile().toPath());
         log = event.getModLog();
         proxy.initModEvent(event);
+
+        if(Loader.isModLoaded("cctweaked")) {
+            ComputerCraftAPI.registerPeripheralProvider(computerInterfacePeripheralProvider);
+        }
     }
 
     @EventHandler

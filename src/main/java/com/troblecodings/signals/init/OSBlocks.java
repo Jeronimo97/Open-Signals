@@ -8,6 +8,7 @@ import java.util.List;
 import com.troblecodings.signals.OpenSignalsMain;
 import com.troblecodings.signals.blocks.BasicBlock;
 import com.troblecodings.signals.blocks.CombinedRedstoneInput;
+import com.troblecodings.signals.blocks.ComputerInterfaceBlock;
 import com.troblecodings.signals.blocks.GhostBlock;
 import com.troblecodings.signals.blocks.PathwayRequester;
 import com.troblecodings.signals.blocks.Post;
@@ -46,6 +47,7 @@ public final class OSBlocks {
     public static final PathwayRequester PATHWAY_REQUESTER = new PathwayRequester();
     public static final TrainNumberBlock TRAIN_NUMBER_BLOCK = new TrainNumberBlock();
     public static final PostConnectable POST_CONNECTABLE = new PostConnectable();
+    public static final ComputerInterfaceBlock COMPUTER_INTERFACE = new ComputerInterfaceBlock();
 
     public static final List<BasicBlock> BLOCKS_TO_REGISTER = new ArrayList<>();
 

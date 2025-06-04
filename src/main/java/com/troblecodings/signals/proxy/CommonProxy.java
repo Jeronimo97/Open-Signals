@@ -29,7 +29,6 @@ import com.troblecodings.signals.init.OSBlocks;
 import com.troblecodings.signals.init.OSSounds;
 import com.troblecodings.signals.items.Placementtool;
 import com.troblecodings.signals.signalbridge.SignalBridgeBasicBlock;
-
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 

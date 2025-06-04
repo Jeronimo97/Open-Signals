@@ -1,0 +1,11 @@
+*.jar
+*.class
+build/
+bin/
+run/
+.gradle/
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws

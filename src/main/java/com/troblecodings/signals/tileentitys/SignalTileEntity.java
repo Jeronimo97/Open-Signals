@@ -73,6 +73,15 @@ public class SignalTileEntity extends SyncableTileEntity implements NamableWrapp
         return ImmutableMap.copyOf(properties);
     }
 
+    public void setProperties(Map<SEProperty, String> newProperties) {
+        properties.clear();
+        properties.putAll(newProperties);
+        markDirty();
+        if (!world.isRemote) {
+            SignalStateHandler.setStates(new SignalStateInfo(world, pos, getSignal()), properties);
+        }
+    }
+
     @Override
     public void onLoad() {
         if (!world.isRemote) {
