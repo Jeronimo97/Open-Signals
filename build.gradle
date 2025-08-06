@@ -26,6 +26,12 @@ sourceSets{
         }
     }
 }
+repositories {
+    maven {
+            name = "SquidDev"
+            url = "https://squiddev.cc/maven/"
+        }
+}
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
@@ -80,7 +86,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.1")
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    implementation files('libs/cc-tweaked-1.12.2-1.89.2.jar')
+    //implementation files('libs/cc-tweaked-1.12.2-1.89.2.jar')
+    compileOnly "org.squiddev:cc-tweaked-1.12.2:1.89.2"
 }
 
 test {
