@@ -1,6 +1,16 @@
 # Changelog
 
 
+## [1.20.1 - 3.8.4]
+* port: Minecraft 1.20.1 / Forge 47.4.22
+* ref: registration moved to `RegisterEvent`, since content pack blocks and items are only known at runtime
+* ref: creative tabs rebuilt on the 1.20.1 tab registry
+* ref: signal models are now baked in `ModelEvent.ModifyBakingResult` instead of hijacking `ForgeModelBakery`
+* ref: `com.mojang.math` replaced by JOML, routed through `QuaternionWrapper`
+* ref: gui rendering moved from `PoseStack` to `GuiGraphics`
+* feat: `assets/minecraft/atlases/blocks.json` stitches the OpenSignals block and item textures, which the atlas no longer collects from models
+* fix: config values are no longer read during class initialisation, which Forge 47 rejects
+
 ## [1.12.2 - 3.8.4]
 * update build script
 

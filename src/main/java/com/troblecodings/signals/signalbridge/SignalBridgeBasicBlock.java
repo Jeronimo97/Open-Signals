@@ -39,7 +39,7 @@ public class SignalBridgeBasicBlock extends BasicBlock {
 
     public SignalBridgeBasicBlock(final SignalBridgeBlockProperties properties) {
         super(Properties.of().mapColor(MapColor.STONE).noOcclusion()
-                .lightLevel(u -> ConfigHandler.GENERAL.lightEmission.get())
+                .lightLevel(u -> ConfigHandler.lightEmission())
                 .isRedstoneConductor((_u1, _u2, _u3) -> false));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
         this.properties = properties;

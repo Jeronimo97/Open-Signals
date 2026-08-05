@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 import com.google.common.collect.Maps;
-import org.joml.Quaternionf;
 
 import com.troblecodings.core.QuaternionWrapper;
 import com.troblecodings.core.I18Wrapper;

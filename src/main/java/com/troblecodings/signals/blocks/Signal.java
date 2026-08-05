@@ -96,7 +96,7 @@ public class Signal extends BasicBlock {
 
     public Signal(final SignalProperties prop, final String name) {
         super(Properties.of().mapColor(MapColor.STONE).noOcclusion()
-                .lightLevel(u -> ConfigHandler.GENERAL.lightEmission.get())
+                .lightLevel(u -> ConfigHandler.lightEmission())
                 .isRedstoneConductor((_u1, _u2, _u3) -> false));
         this.prop = prop;
         this.id = getIDFromName(name);

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
 
-import org.joml.Quaternionf;
 
 import com.troblecodings.core.QuaternionWrapper;
 import com.troblecodings.core.VectorWrapper;

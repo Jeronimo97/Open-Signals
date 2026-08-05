@@ -42,6 +42,12 @@ public final class CustomModelLoader implements ResourceManagerReloadListener {
 
     public static final CustomModelLoader INSTANCE = new CustomModelLoader();
 
+    /**
+     * Models injected during ModelEvent.ModifyBakingResult, held until the atlases have been
+     * uploaded so their quads can be built. See {@link #onResourceManagerReload}.
+     */
+    private final List<SignalBakedModel> pendingBakes = new ArrayList<>();
+
     private CustomModelLoader() {
     }
 
@@ -91,18 +97,29 @@ public final class CustomModelLoader implements ResourceManagerReloadListener {
      * baked model map, replacing whatever the missing blockstate files produced.
      */
     public void bakeInto(final Map<ResourceLocation, BakedModel> models, final ModelBakery bakery) {
+        // The reload listener runs after the model manager has already baked, so the definitions
+        // are (re)read here instead. 1.18 did the same from ModelRegistryEvent.
+        loadDefinitions();
+        pendingBakes.clear();
         final ModelBaker baker = new SignalModelBaker(bakery, Material::sprite);
-        registeredModels.forEach((name, loaderList) -> {
+        int baked = 0;
+        for (final Entry<String, List<SignalModelLoaderInfo>> entry : registeredModels.entrySet()) {
             for (final SignalAngel angel : SignalAngel.values()) {
                 final ModelResourceLocation location = new ModelResourceLocation(
-                        OpenSignalsMain.MODID, name, "angel=" + angel.getNameWrapper());
-                final BakedModel baked = new SignalCustomModel(angel, loaderList).bake(baker,
+                        OpenSignalsMain.MODID, entry.getKey(),
+                        "angel=" + angel.getNameWrapper());
+                final BakedModel model = new SignalCustomModel(angel, entry.getValue()).bake(baker,
                         Material::sprite, new SimpleModelState(Transformation.identity()),
                         location);
-                if (baked != null)
-                    models.put(location, baked);
+                if (model instanceof SignalBakedModel) {
+                    models.put(location, model);
+                    pendingBakes.add((SignalBakedModel) model);
+                    baked++;
+                }
             }
-        });
+        }
+        OpenSignalsMain.getLogger().info("Baked {} models for {} signal types.", baked,
+                registeredModels.size());
     }
 
     public static Map<String, List<SignalModelLoaderInfo>> getRegisteredModels() {
@@ -169,8 +186,19 @@ public final class CustomModelLoader implements ResourceManagerReloadListener {
         }
     }
 
+    /**
+     * Runs after ModelManager has finished, which is the first point at which the texture atlases
+     * have been uploaded, so the models injected during baking can now build their quads. Doing it
+     * here rather than on first render also keeps
+     * {@link SignalCustomModel#getModelFromLocation} populated for the animation handler.
+     */
     @Override
     public void onResourceManagerReload(final ResourceManager manager) {
+        pendingBakes.forEach(SignalBakedModel::resolve);
+        pendingBakes.clear();
+    }
+
+    private void loadDefinitions() {
         registeredModels.clear();
 
         final Map<String, ModelExtention> extentions = new HashMap<>();

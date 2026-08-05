@@ -18,7 +18,6 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import org.joml.Quaternionf;
 
 import com.troblecodings.core.QuaternionWrapper;
 import com.troblecodings.guilib.ecs.entitys.BufferWrapper;

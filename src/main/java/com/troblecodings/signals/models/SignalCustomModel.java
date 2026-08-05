@@ -142,23 +142,29 @@ public class SignalCustomModel implements UnbakedModel {
         });
     }
 
+    /**
+     * The returned model bakes its parts on first use rather than here: this runs during
+     * ModelEvent.ModifyBakingResult, before the texture atlases have been uploaded, so no sprites
+     * are available yet. See {@link SignalBakedModel}.
+     */
     @Override
     public BakedModel bake(final ModelBaker baker,
             final Function<Material, TextureAtlasSprite> function, final ModelState state,
             final ResourceLocation resource) {
-        list.forEach(info -> {
-            if (info.model == null) {
-                final ResourceLocation location =
-                        new ResourceLocation(OpenSignalsMain.MODID, "block/" + info.name);
-                info.model = baker.getModel(location);
-            }
+        return new SignalBakedModel(() -> {
+            list.forEach(info -> {
+                if (info.model == null) {
+                    final ResourceLocation location =
+                            new ResourceLocation(OpenSignalsMain.MODID, "block/" + info.name);
+                    info.model = baker.getModel(location);
+                }
+            });
+            final Quaternionf quaternion = angel.getQuaternion();
+            return list.stream()
+                    .map(info -> transform(info, baker, resource, function, materialsFromString,
+                            quaternion))
+                    .collect(Collectors.toUnmodifiableList());
         });
-        final Quaternionf quaternion = angel.getQuaternion();
-        return new SignalBakedModel(
-                list.stream()
-                        .map(info -> transform(info, baker, resource, function,
-                                materialsFromString, quaternion))
-                        .collect(Collectors.toUnmodifiableList()));
     }
 
     public static BakedModel getModelFromLocation(final ResourceLocation location) {

@@ -2,6 +2,7 @@ package com.troblecodings.signals.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,43 +23,63 @@ import net.minecraftforge.client.model.data.ModelData;
 @OnlyIn(Dist.CLIENT)
 public class SignalBakedModel implements IDynamicBakedModel {
 
-    private final BakedModel baseGetter;
-    private final List<BakedModelPair> bakedCache;
+    /**
+     * Baking is deferred because this model is created during
+     * {@code ModelEvent.ModifyBakingResult}, which is the only point at which an entry can still
+     * reach the BlockState to BakedModel cache, but which runs before the texture atlases have been
+     * uploaded. Resolving the quads needs sprites, so that work happens on first use (or when
+     * {@link #resolve()} is called once the atlases are ready).
+     */
+    private final Supplier<List<BakedModelPair>> supplier;
+    private List<BakedModelPair> bakedCache;
 
-    public SignalBakedModel(final List<BakedModelPair> bakedCache) {
-        this.bakedCache = bakedCache;
-        this.baseGetter = bakedCache.iterator().next().model;
+    public SignalBakedModel(final Supplier<List<BakedModelPair>> supplier) {
+        this.supplier = supplier;
+    }
+
+    public void resolve() {
+        pairs();
+    }
+
+    private List<BakedModelPair> pairs() {
+        if (bakedCache == null)
+            bakedCache = supplier.get();
+        return bakedCache;
+    }
+
+    private BakedModel base() {
+        return pairs().iterator().next().model;
     }
 
     @Override
     public boolean useAmbientOcclusion() {
-        return baseGetter.useAmbientOcclusion();
+        return base().useAmbientOcclusion();
     }
 
     @Override
     public boolean isGui3d() {
-        return baseGetter.isGui3d();
+        return base().isGui3d();
     }
 
     @Override
     public boolean usesBlockLight() {
-        return baseGetter.usesBlockLight();
+        return base().usesBlockLight();
     }
 
     @Override
     public boolean isCustomRenderer() {
-        return baseGetter.isCustomRenderer();
+        return base().isCustomRenderer();
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public TextureAtlasSprite getParticleIcon() {
-        return baseGetter.getParticleIcon();
+        return base().getParticleIcon();
     }
 
     @Override
     public ItemOverrides getOverrides() {
-        return baseGetter.getOverrides();
+        return base().getOverrides();
     }
 
     @Override
@@ -67,7 +88,7 @@ public class SignalBakedModel implements IDynamicBakedModel {
             final @Nullable RenderType renderType) {
         final List<BakedQuad> quadBuilder = new ArrayList<>();
         final ModelInfoWrapper modelData = new ModelInfoWrapper(extraData);
-        for (final BakedModelPair pair : bakedCache) {
+        for (final BakedModelPair pair : pairs()) {
             if (pair.predicate.test(modelData))
                 quadBuilder.addAll(
                         pair.model.getQuads(state, side, rand, extraData, renderType));
