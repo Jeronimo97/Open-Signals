@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -30,7 +30,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 public class GhostBlock extends BasicBlock {
 
     public GhostBlock() {
-        super(Properties.of(Material.GLASS).noOcclusion()
+        // Material.GLASS was MapColor.NONE plus notSolidBlocking; the latter is expressed as
+        // isSuffocating/isViewBlocking since 1.20 dropped Material.
+        super(Properties.of().mapColor(MapColor.NONE).noOcclusion()
+                .isSuffocating((_u1, _u2, _u3) -> false)
+                .isViewBlocking((_u1, _u2, _u3) -> false)
                 .lightLevel(u -> ConfigHandler.GENERAL.lightEmission.get()));
         registerDefaultState(defaultBlockState());
     }
@@ -72,13 +76,6 @@ public class GhostBlock extends BasicBlock {
     }
 
     @OnlyIn(Dist.CLIENT)
-    @Override
-    public StateDefinition<Block, BlockState> getStateDefinition() {
-        if (!Minecraft.getInstance().isLocalServer()) {
-            CustomModelLoader.INSTANCE.prepare();
-        }
-        return super.getStateDefinition();
-    }
 
     @Override
     public ItemStack getCloneItemStack(final BlockState state, final HitResult target,

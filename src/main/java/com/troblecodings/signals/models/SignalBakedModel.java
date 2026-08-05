@@ -2,18 +2,22 @@ package com.troblecodings.signals.models;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.data.IDynamicBakedModel;
-import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.IDynamicBakedModel;
+import net.minecraftforge.client.model.data.ModelData;
 
 @OnlyIn(Dist.CLIENT)
 public class SignalBakedModel implements IDynamicBakedModel {
@@ -58,13 +62,15 @@ public class SignalBakedModel implements IDynamicBakedModel {
     }
 
     @Override
-    public List<BakedQuad> getQuads(final BlockState state, final Direction side, final Random rand,
-            final IModelData extraData) {
+    public @Nonnull List<BakedQuad> getQuads(final BlockState state, final Direction side,
+            final @Nonnull RandomSource rand, final @Nonnull ModelData extraData,
+            final @Nullable RenderType renderType) {
         final List<BakedQuad> quadBuilder = new ArrayList<>();
         final ModelInfoWrapper modelData = new ModelInfoWrapper(extraData);
         for (final BakedModelPair pair : bakedCache) {
             if (pair.predicate.test(modelData))
-                quadBuilder.addAll(pair.model.getQuads(state, side, rand, modelData));
+                quadBuilder.addAll(
+                        pair.model.getQuads(state, side, rand, extraData, renderType));
         }
         return quadBuilder;
     }

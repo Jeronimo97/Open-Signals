@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.function.Predicate;
+
+import com.mojang.math.Transformation;
 
 import com.troblecodings.core.VectorWrapper;
 import com.troblecodings.signals.OpenSignalsMain;
@@ -17,12 +20,20 @@ import com.troblecodings.signals.parser.FunctionParsingInfo;
 import com.troblecodings.signals.parser.LogicParser;
 import com.troblecodings.signals.parser.LogicalParserException;
 
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.ForgeModelBakery;
+import net.minecraftforge.client.model.SimpleModelState;
 
 @OnlyIn(Dist.CLIENT)
 public final class CustomModelLoader implements ResourceManagerReloadListener {
@@ -30,9 +41,72 @@ public final class CustomModelLoader implements ResourceManagerReloadListener {
     private static HashMap<String, List<SignalModelLoaderInfo>> registeredModels = new HashMap<>();
 
     public static final CustomModelLoader INSTANCE = new CustomModelLoader();
-    private MapWrapper wrapper;
 
     private CustomModelLoader() {
+    }
+
+    /**
+     * Minimal {@link ModelBaker} over the bakery handed out by ModelEvent.
+     *
+     * Up to 1.18 the signal models were injected by swapping a custom Map into
+     * {@code ForgeModelBakery.unbakedCache}. That class was deleted in Forge 1.19, so the models
+     * are now baked here and pushed into the baked model map instead. ModelBakery's own
+     * ModelBakerImpl is package private, hence this small implementation.
+     */
+    private static final class SignalModelBaker implements ModelBaker {
+
+        private final ModelBakery bakery;
+        private final Function<Material, TextureAtlasSprite> sprites;
+
+        private SignalModelBaker(final ModelBakery bakery,
+                final Function<Material, TextureAtlasSprite> sprites) {
+            this.bakery = bakery;
+            this.sprites = sprites;
+        }
+
+        @Override
+        public UnbakedModel getModel(final ResourceLocation location) {
+            return bakery.getModel(location);
+        }
+
+        @Override
+        public Function<Material, TextureAtlasSprite> getModelTextureGetter() {
+            return sprites;
+        }
+
+        @Override
+        public BakedModel bake(final ResourceLocation location, final ModelState state) {
+            return bake(location, state, sprites);
+        }
+
+        @Override
+        public BakedModel bake(final ResourceLocation location, final ModelState state,
+                final Function<Material, TextureAtlasSprite> spriteGetter) {
+            return getModel(location).bake(this, spriteGetter, state, location);
+        }
+    }
+
+    /**
+     * Bakes a SignalCustomModel for every registered signal and angle and writes them into the
+     * baked model map, replacing whatever the missing blockstate files produced.
+     */
+    public void bakeInto(final Map<ResourceLocation, BakedModel> models, final ModelBakery bakery) {
+        final ModelBaker baker = new SignalModelBaker(bakery, Material::sprite);
+        registeredModels.forEach((name, loaderList) -> {
+            for (final SignalAngel angel : SignalAngel.values()) {
+                final ModelResourceLocation location = new ModelResourceLocation(
+                        OpenSignalsMain.MODID, name, "angel=" + angel.getNameWrapper());
+                final BakedModel baked = new SignalCustomModel(angel, loaderList).bake(baker,
+                        Material::sprite, new SimpleModelState(Transformation.identity()),
+                        location);
+                if (baked != null)
+                    models.put(location, baked);
+            }
+        });
+    }
+
+    public static Map<String, List<SignalModelLoaderInfo>> getRegisteredModels() {
+        return registeredModels;
     }
 
     private static void loadExtention(final TextureStats texturestate,
@@ -92,31 +166,6 @@ public final class CustomModelLoader implements ResourceManagerReloadListener {
                 }
             }
 
-        }
-    }
-
-    private void defaultModel(final MapWrapper wrapper, final String name) {
-        wrapper.putNormal(new ModelResourceLocation(OpenSignalsMain.MODID, name, "inventory"),
-                DefaultModel.INSTANCE);
-        wrapper.putNormal(new ModelResourceLocation(OpenSignalsMain.MODID, name, ""),
-                DefaultModel.INSTANCE);
-    }
-
-    public void prepare() {
-        final ForgeModelBakery bakery = ForgeModelBakery.instance();
-        if (!(bakery.unbakedCache instanceof MapWrapper)) {
-            wrapper = new MapWrapper(bakery.unbakedCache, registeredModels.keySet());
-            defaultModel(wrapper, "ghostblock");
-            registeredModels.forEach((name, loaderList) -> {
-                defaultModel(wrapper, name);
-                for (final SignalAngel angel : SignalAngel.values()) {
-                    wrapper.putNormal(
-                            new ModelResourceLocation(OpenSignalsMain.MODID, name,
-                                    "angel=" + angel.getNameWrapper()),
-                            new SignalCustomModel(angel, loaderList));
-                }
-            });
-            bakery.unbakedCache = wrapper;
         }
     }
 

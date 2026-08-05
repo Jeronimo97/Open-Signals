@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.phys.HitResult;
 
 public class SignalBridgeBasicBlock extends BasicBlock {
@@ -38,7 +38,7 @@ public class SignalBridgeBasicBlock extends BasicBlock {
     private final int id;
 
     public SignalBridgeBasicBlock(final SignalBridgeBlockProperties properties) {
-        super(Properties.of(Material.STONE).noOcclusion()
+        super(Properties.of().mapColor(MapColor.STONE).noOcclusion()
                 .lightLevel(u -> ConfigHandler.GENERAL.lightEmission.get())
                 .isRedstoneConductor((_u1, _u2, _u3) -> false));
         registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
