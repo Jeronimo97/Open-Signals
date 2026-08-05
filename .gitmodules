@@ -1,12 +1,12 @@
 [submodule "guilib"]
 	path = guilib
-	url = https://github.com/MrTroble/guilib
+	url = https://github.com/stacode123/guilib
         branch = 1.20-master
 [submodule "linkableapi"]
 	path = linkableapi
-	url = https://github.com/MrTroble/linkableapi
+	url = https://github.com/stacode123/linkableapi
         branch = 1.20-OS-master
 [submodule "contentPackLib"]
 	path = contentPackLib
-	url = https://github.com/MrTroble/contentPackLib
+	url = https://github.com/stacode123/contentPackLib
         branch = 1.20.1
