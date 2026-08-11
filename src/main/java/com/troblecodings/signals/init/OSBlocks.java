@@ -84,9 +84,10 @@ public final class OSBlocks {
     }
 
     /**
-     * Forge removed RegistryEvent.Register in 1.19. RegisterEvent is used rather than
-     * DeferredRegister because the block set is not known until content packs have been read by
-     * {@link #init()}, so there are no static entries to declare up front.
+     * Forge removed RegistryEvent.Register in 1.19. RegisterEvent is used rather
+     * than DeferredRegister because the block set is not known until content packs
+     * have been read by {@link #init()}, so there are no static entries to declare
+     * up front.
      */
     @SubscribeEvent
     public static void registerAll(final RegisterEvent event) {
@@ -103,6 +104,7 @@ public final class OSBlocks {
                 helper -> BLOCKS_TO_REGISTER.stream().filter(BasicBlock::shouldHaveItem)
                         .forEach(block -> helper.register(
                                 new ResourceLocation(OpenSignalsMain.MODID, block.getBlockName()),
-                                new BlockItem(block, new Properties()))));
+                                OSItems.assignTab(new BlockItem(block, new Properties()),
+                                        OSTabs.TAB.getKey()))));
     }
 }

@@ -8,8 +8,8 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.troblecodings.core.NBTWrapper;
-import com.troblecodings.opensignals.linkableapi.Linkingtool;
-import com.troblecodings.opensignals.linkableapi.MultiLinkingTool;
+import com.troblecodings.linkableapi.Linkingtool;
+import com.troblecodings.linkableapi.MultiLinkingTool;
 import com.troblecodings.signals.OpenSignalsMain;
 import com.troblecodings.signals.blocks.Signal;
 import com.troblecodings.signals.items.ItemArmorTemplate;
@@ -36,7 +36,15 @@ public final class OSItems {
     private OSItems() {
     }
 
-    public static final Linkingtool LINKING_TOOL = new Linkingtool((world, pos) -> {
+    /**
+     * Items that sat in a vanilla creative tab through {@code Properties.tab(...)}
+     * on 1.18. 1.20.1 removed that, so {@link OSTabs} puts them back via
+     * BuildCreativeModeTabContentsEvent.
+     */
+    public static final Map<Item, ResourceKey<CreativeModeTab>> CREATIVE_TAB_ITEMS =
+            new LinkedHashMap<>();
+
+    public static final Linkingtool LINKING_TOOL = assignTab(new Linkingtool(null, (world, pos) -> {
         final BlockState state = world.getBlockState(pos);
         final Block block = state.getBlock();
         final boolean isRedstoneBlock = block == OSBlocks.REDSTONE_IN
@@ -48,9 +56,9 @@ public final class OSItems {
         final NBTWrapper wrapper = new NBTWrapper(tag);
         wrapper.putString(pos.toShortString(),
                 ForgeRegistries.BLOCKS.getKey(state.getBlock()).getPath());
-    });
-    public static final MultiLinkingTool MULTI_LINKING_TOOL = new MultiLinkingTool(
-            (world, pos) -> {
+    }), OSTabs.TAB.getKey());
+    public static final MultiLinkingTool MULTI_LINKING_TOOL =
+            assignTab(new MultiLinkingTool(null, (world, pos) -> {
                 final BlockState state = world.getBlockState(pos);
                 final Block block = state.getBlock();
                 final boolean isRedstoneBlock = block == OSBlocks.REDSTONE_IN
@@ -63,15 +71,17 @@ public final class OSItems {
                 final NBTWrapper wrapper = new NBTWrapper(tag);
                 wrapper.putString(pos.toShortString(),
                         ForgeRegistries.BLOCKS.getKey(state.getBlock()).getPath());
-            });
-    public static final Item CONDUCTOR_TROWEL_GREEN = new Item(
-            new Properties());
-    public static final Item CONDUCTOR_TROWEL_RED = new Item(
-            new Properties());
-    public static final Item WARNING_FLAG = new Item(
-            new Properties());
-    public static final Item K_BOARD = new Item(new Properties());
-    public static final Item L_BOARD = new Item(new Properties());
+            }), OSTabs.TAB.getKey());
+    public static final Item CONDUCTOR_TROWEL_GREEN =
+            assignTab(new Item(new Properties()), CreativeModeTabs.COMBAT);
+    public static final Item CONDUCTOR_TROWEL_RED =
+            assignTab(new Item(new Properties()), CreativeModeTabs.COMBAT);
+    public static final Item WARNING_FLAG =
+            assignTab(new Item(new Properties()), CreativeModeTabs.COMBAT);
+    public static final Item K_BOARD =
+            assignTab(new Item(new Properties()), CreativeModeTabs.COMBAT);
+    public static final Item L_BOARD =
+            assignTab(new Item(new Properties()), CreativeModeTabs.COMBAT);
     public static final ItemArmorTemplate REFLECTIVE_HEAD = new ItemArmorTemplate(
             ItemArmorTemplate.REFLECTIVE_ARMOR_MATERIAL, ArmorItem.Type.HELMET);
     public static final ItemArmorTemplate REFLECTIVE_CHESTPLATE = new ItemArmorTemplate(
@@ -110,16 +120,18 @@ public final class OSItems {
             ItemArmorTemplate.CONDUCTOR_ARMOR_MATERIAL, ArmorItem.Type.CHESTPLATE);
     public static final ItemArmorTemplate CONDUCTOR_PANTS = new ItemArmorTemplate(
             ItemArmorTemplate.CONDUCTOR_ARMOR_MATERIAL, ArmorItem.Type.LEGGINGS);
-    public static final ItemArmorTemplate CONDUCTOR_SHOES = new ItemArmorTemplate(
-            ItemArmorTemplate.CONDUCTOR_ARMOR_MATERIAL, ArmorItem.Type.BOOTS);
-    public static final Item SIGNAL_PLATE = new Item(
-            new Properties());
-    public static final Item SIGNAL_SHIELD = new Item(
-            new Properties());
-    public static final Item LAMPS = new Item(new Properties());
-    public static final Item ELECTRIC_PARTS = new Item(
-            new Properties());
-    public static final Item MANIPULATOR = new Item(new Properties());
+    public static final ItemArmorTemplate CONDUCTOR_SHOES =
+            new ItemArmorTemplate(ItemArmorTemplate.CONDUCTOR_ARMOR_MATERIAL, ArmorItem.Type.BOOTS);
+    public static final Item SIGNAL_PLATE =
+            assignTab(new Item(new Properties()), CreativeModeTabs.INGREDIENTS);
+    public static final Item SIGNAL_SHIELD =
+            assignTab(new Item(new Properties()), CreativeModeTabs.INGREDIENTS);
+    public static final Item LAMPS =
+            assignTab(new Item(new Properties()), CreativeModeTabs.INGREDIENTS);
+    public static final Item ELECTRIC_PARTS =
+            assignTab(new Item(new Properties()), CreativeModeTabs.INGREDIENTS);
+    public static final Item MANIPULATOR =
+            assignTab(new Item(new Properties()), OSTabs.TAB.getKey());
     public static final SignalBridgeItem SIGNAL_BRIDGE_ITEM = new SignalBridgeItem();
 
     public static ArrayList<Item> registeredItems = new ArrayList<>();
@@ -127,33 +139,15 @@ public final class OSItems {
     public static ArrayList<Placementtool> placementtools = new ArrayList<>();
 
     /**
-     * Registry names used to live on the item itself; {@code setRegistryName} was removed in 1.19,
-     * so they are held here until {@link RegisterEvent} fires.
+     * Registry names used to live on the item itself; {@code setRegistryName} was
+     * removed in 1.19, so they are held here until {@link RegisterEvent} fires.
      */
     public static final Map<Item, ResourceLocation> ITEM_NAMES = new LinkedHashMap<>();
 
-    /**
-     * Items that sat in a vanilla creative tab through {@code Properties.tab(...)} on 1.18. 1.20.1
-     * removed that, so {@link OSTabs} puts them back via BuildCreativeModeTabContentsEvent.
-     */
-    public static final Map<Item, ResourceKey<CreativeModeTab>> VANILLA_TAB_ITEMS =
-            new LinkedHashMap<>();
-
-    private static void assignVanillaTabs() {
-        for (final Item item : new Item[] {
-                CONDUCTOR_TROWEL_GREEN, CONDUCTOR_TROWEL_RED, WARNING_FLAG, K_BOARD, L_BOARD,
-                REFLECTIVE_HEAD, REFLECTIVE_CHESTPLATE, REFLECTIVE_PANTS, REFLECTIVE_SHOES,
-                DISPATCHER_HEAD, DISPATCHER_CHESTPLATE, DISPATCHER_PANTS, DISPATCHER_SHOES,
-                STATION_MANAGER_HEAD, STATION_MANAGER_CHESTPLATE, STATION_MANAGER_PANTS,
-                STATION_MANAGER_SHOES, TRAIN_DRIVER_HEAD, TRAIN_DRIVER_CHESTPLATE,
-                TRAIN_DRIVER_PANTS, TRAIN_DRIVER_SHOES, CONDUCTOR_HEAD, CONDUCTOR_CHESTPLATE,
-                CONDUCTOR_PANTS, CONDUCTOR_SHOES
-        })
-            VANILLA_TAB_ITEMS.put(item, CreativeModeTabs.COMBAT);
-        for (final Item item : new Item[] {
-                SIGNAL_PLATE, SIGNAL_SHIELD, LAMPS, ELECTRIC_PARTS
-        })
-            VANILLA_TAB_ITEMS.put(item, CreativeModeTabs.INGREDIENTS);
+    public static <T extends Item> T assignTab(final T item,
+            final ResourceKey<CreativeModeTab> tab) {
+        CREATIVE_TAB_ITEMS.put(item, tab);
+        return item;
     }
 
     public static void init() {
@@ -168,18 +162,17 @@ public final class OSItems {
                     final String name = field.getName().toLowerCase().replace("_", "");
                     try {
                         final Object object = field.get(null);
-                        if (!(object instanceof Item))
+                        if (!(object instanceof Item)) {
                             continue;
+                        }
                         final Item item = (Item) object;
-                        ITEM_NAMES.put(item,
-                                new ResourceLocation(OpenSignalsMain.MODID, name));
+                        ITEM_NAMES.put(item, new ResourceLocation(OpenSignalsMain.MODID, name));
                         registeredItems.add(item);
                     } catch (final IllegalArgumentException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
                 }
             }
-            assignVanillaTabs();
             loadTools();
         }
     }
