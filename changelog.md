@@ -10,8 +10,9 @@
 * ref: gui rendering moved from `PoseStack` to `GuiGraphics`
 * feat: `assets/minecraft/atlases/blocks.json` stitches the OpenSignals block and item textures, which the atlas no longer collects from models
 * fix: config values are no longer read during class initialisation, which Forge 47 rejects
+* ref/fix: build setup
 
-## [1.12.2 - 3.8.4]
+## [1.18.2 - 3.8.4]
 * update build script
 
 ## [1.18.2 - 3.8.3]
