@@ -3,6 +3,9 @@ loaderVersion="[47,)"
 issueTrackerURL="https://github.com/MrTroble/Open-Signals/issues"
 license="Apache License Version 2.0"
 
+[[mixins]]
+config="opensignals.mixins.json"
+
 [[mods]]
 modId="opensignals"
 version="${file.jarVersion}"

@@ -4,6 +4,7 @@ plugins {
     id 'eclipse'
     id 'net.darkhax.curseforgegradle' version '1.3.+'
     id 'com.modrinth.minotaur' version '2.+'
+    id 'org.spongepowered.mixin' version '0.7.+'
 }
 
 group = project.mod_group
@@ -40,6 +41,8 @@ minecraft {
         client {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'debug'
+
+            arg '-mixin.config=opensignals.mixins.json'
         }
 
         server {
@@ -48,8 +51,14 @@ minecraft {
     }
 }
 
+mixin {
+    add sourceSets.main, "opensignals.refmap.json"
+    config "opensignals.mixins.json"
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 

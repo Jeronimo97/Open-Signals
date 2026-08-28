@@ -25,20 +25,18 @@ public final class OSTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, OpenSignalsMain.MODID);
 
-    public static final RegistryObject<CreativeModeTab> TAB =
-            CREATIVE_MODE_TABS.register(OpenSignalsMain.MODID,
-                    () -> CreativeModeTab.builder()
-                            .title(Component.translatable("itemGroup." + OpenSignalsMain.MODID))
-                            .icon(() -> new ItemStack(OSItems.LINKING_TOOL))
-                            .displayItems((parameters, output) -> {
-                                OSItems.init();
-                                OSItems.registeredItems.stream().filter(
-                                        item -> !OSItems.CREATIVE_TAB_ITEMS.containsKey(item))
-                                        .forEach(output::accept);
-                                OSBlocks.BLOCKS_TO_REGISTER.stream()
-                                        .filter(block -> block.shouldHaveItem())
-                                        .forEach(output::accept);
-                            }).build());
+    public static final RegistryObject<CreativeModeTab> TAB = CREATIVE_MODE_TABS.register(
+            OpenSignalsMain.MODID,
+            () -> CreativeModeTab.builder().title(Component.translatable("itemGroup.Open Signals"))
+                    .icon(() -> new ItemStack(OSItems.LINKING_TOOL))
+                    .displayItems((parameters, output) -> {
+                        OSItems.init();
+                        OSItems.registeredItems.stream()
+                                .filter(item -> !OSItems.CREATIVE_TAB_ITEMS.containsKey(item))
+                                .forEach(output::accept);
+                        OSBlocks.BLOCKS_TO_REGISTER.stream().filter(block -> block.shouldHaveItem())
+                                .forEach(output::accept);
+                    }).build());
 
     /**
      * Items that used to sit in a vanilla tab via {@code Properties.tab(...)} are
