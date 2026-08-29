@@ -112,6 +112,16 @@ public class SignalTileEntity extends SyncableTileEntity implements NamableWrapp
 
     @Override
     public void onLoad() {
+        if (level != null && level.isClientSide()) {
+            final StateInfo info = new StateInfo(level, getBlockPos());
+            final Map<SEProperty, String> cached =
+                    ClientSignalStateHandler.refreshAndGetClientStates(info);
+            if (!cached.isEmpty()) {
+                requestModelDataUpdate();
+                level.setBlocksDirty(getBlockPos(), getBlockState(), getBlockState());
+                ClientSignalStateHandler.scheduleRebuild(getBlockPos());
+            }
+        }
         if (!level.isClientSide) {
             SignalStateHandler.addListener(new SignalStateInfo(level, worldPosition, getSignal()),
                     listener);
